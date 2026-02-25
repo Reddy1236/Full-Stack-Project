@@ -44,7 +44,7 @@ public class AuthController {
         User user = userRepository.findByEmail(request.email().trim().toLowerCase())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials"));
 
-        if (!user.getPassword().equals(request.password())) {
+        if (user.getPassword() == null || !user.getPassword().equals(request.password())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
         }
 

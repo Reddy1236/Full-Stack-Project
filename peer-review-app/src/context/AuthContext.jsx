@@ -1,10 +1,23 @@
 import { createContext, useContext, useState } from 'react'
+import { API_BASE_URL } from '../config/api'
 
 const AuthContext = createContext(null)
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'
 
 function toAppRole(role) {
   return String(role || '').toLowerCase() === 'teacher' ? 'teacher' : 'student'
+}
+
+async function readApiError(response, fallback) {
+  const contentType = response.headers.get('content-type') || ''
+
+  if (contentType.includes('application/json')) {
+    const data = await response.json().catch(() => null)
+    const message = data?.message || data?.error
+    if (message) return String(message)
+  }
+
+  const text = await response.text().catch(() => '')
+  return text || fallback
 }
 
 export function AuthProvider({ children }) {
@@ -42,7 +55,9 @@ export function AuthProvider({ children }) {
         if (loginRes.status === 401) {
           return { success: false, error: 'Account not found or password incorrect. Please register first.' }
         }
-        return { success: false, error: 'Login failed. Please verify backend is running.' }
+
+        const errorMessage = await readApiError(loginRes, 'Login failed. Please try again.')
+        return { success: false, error: errorMessage }
       }
 
       const data = await loginRes.json()
@@ -62,7 +77,7 @@ export function AuthProvider({ children }) {
       }
       return { success: true, role: userData.role }
     } catch {
-      return { success: false, error: 'Cannot reach backend. Start Spring Boot on port 8080.' }
+      return { success: false, error: 'Cannot connect to backend server. Please try again.' }
     }
   }
 
@@ -91,7 +106,8 @@ export function AuthProvider({ children }) {
         return { success: false, error: 'Email already registered. Please login.' }
       }
       if (!res.ok) {
-        return { success: false, error: 'Registration failed. Try again.' }
+        const errorMessage = await readApiError(res, 'Registration failed. Try again.')
+        return { success: false, error: errorMessage }
       }
 
       let message = 'Successfully registered. Please login with the same credentials.'
@@ -104,7 +120,7 @@ export function AuthProvider({ children }) {
 
       return { success: true, message }
     } catch {
-      return { success: false, error: 'Cannot reach backend. Start Spring Boot on port 8080.' }
+      return { success: false, error: 'Cannot connect to backend server. Please try again.' }
     }
   }
 
