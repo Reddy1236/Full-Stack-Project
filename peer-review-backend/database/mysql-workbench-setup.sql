@@ -1,0 +1,26 @@
+CREATE DATABASE IF NOT EXISTS peer_review_db;
+USE peer_review_db;
+
+CREATE TABLE IF NOT EXISTS users (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    email VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_users_email (email)
+);
+
+CREATE TABLE IF NOT EXISTS notifications (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    type VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    time VARCHAR(255) NOT NULL,
+    is_read BIT(1) NOT NULL DEFAULT b'0',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id)
+);
+
+ALTER TABLE notifications
+    ADD COLUMN IF NOT EXISTS is_read BIT(1) NOT NULL DEFAULT b'0';
