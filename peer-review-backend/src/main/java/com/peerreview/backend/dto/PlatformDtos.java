@@ -1,5 +1,6 @@
 package com.peerreview.backend.dto;
 
+import com.peerreview.backend.model.Role;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -62,6 +63,15 @@ public class PlatformDtos {
     ) {
     }
 
+    public record PlatformUserResponse(
+            Long id,
+            String email,
+            String name,
+            Role role,
+            String createdAt
+    ) {
+    }
+
     public record TeacherDecisionResponse(
             String action,
             String comment,
@@ -77,6 +87,7 @@ public class PlatformDtos {
             Map<String, List<String>> assignments,
             Map<String, TeacherDecisionResponse> teacherDecisions,
             Map<String, List<ReviewReplyResponse>> reviewReplies,
+            List<PlatformUserResponse> users,
             List<NotificationResponse> notifications,
             List<ActivityResponse> activityTimeline
     ) {

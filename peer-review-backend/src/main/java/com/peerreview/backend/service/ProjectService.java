@@ -16,6 +16,9 @@ import java.util.stream.Collectors;
 @Service
 public class ProjectService {
     private static final DateTimeFormatter DISPLAY_TIME = DateTimeFormatter.ofPattern("MMM d, h:mm a", Locale.ENGLISH);
+    private static final Long ADMIN_ID = 0L;
+    private static final String ADMIN_NAME = "Avinash Reddy";
+    private static final String ADMIN_EMAIL = "avinashreddypadala1234@gmail.com";
 
     private final ProjectRepository projectRepository;
     private final ReviewRepository reviewRepository;
@@ -24,6 +27,7 @@ public class ProjectService {
     private final NotificationRepository notificationRepository;
     private final ActivityEventRepository activityEventRepository;
     private final ReviewReplyRepository reviewReplyRepository;
+    private final UserRepository userRepository;
 
     public ProjectService(
             ProjectRepository projectRepository,
@@ -32,7 +36,8 @@ public class ProjectService {
             TeacherDecisionRepository teacherDecisionRepository,
             NotificationRepository notificationRepository,
             ActivityEventRepository activityEventRepository,
-            ReviewReplyRepository reviewReplyRepository
+            ReviewReplyRepository reviewReplyRepository,
+            UserRepository userRepository
     ) {
         this.projectRepository = projectRepository;
         this.reviewRepository = reviewRepository;
@@ -41,6 +46,7 @@ public class ProjectService {
         this.notificationRepository = notificationRepository;
         this.activityEventRepository = activityEventRepository;
         this.reviewReplyRepository = reviewReplyRepository;
+        this.userRepository = userRepository;
     }
 
     public List<ProjectDtos.ProjectResponse> listProjects(String status, String search) {
@@ -304,6 +310,17 @@ public class ProjectService {
             notifications = List.of();
         }
 
+        List<PlatformDtos.PlatformUserResponse> users;
+        try {
+            users = userRepository.findAll().stream()
+                    .sorted(Comparator.comparing(User::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
+                    .map(this::toPlatformUserResponse)
+                    .toList();
+            users = appendAdminUser(users);
+        } catch (Exception ex) {
+            users = appendAdminUser(List.of());
+        }
+
         List<PlatformDtos.ActivityResponse> activity;
         try {
             activity = activityEventRepository.findAll().stream()
@@ -320,6 +337,7 @@ public class ProjectService {
                 assignments,
                 teacherDecisions,
                 reviewReplies,
+                users,
                 notifications,
                 activity
         );
@@ -489,6 +507,36 @@ public class ProjectService {
                 item.getTime(),
                 item.getRead()
         );
+    }
+
+    private PlatformDtos.PlatformUserResponse toPlatformUserResponse(User user) {
+        return new PlatformDtos.PlatformUserResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getName(),
+                user.getRole(),
+                user.getCreatedAt() != null ? user.getCreatedAt().toString() : null
+        );
+    }
+
+    private List<PlatformDtos.PlatformUserResponse> appendAdminUser(List<PlatformDtos.PlatformUserResponse> users) {
+        boolean adminAlreadyPresent = users.stream()
+                .anyMatch(user -> ADMIN_EMAIL.equalsIgnoreCase(user.email()));
+
+        if (adminAlreadyPresent) {
+            return users;
+        }
+
+        List<PlatformDtos.PlatformUserResponse> result = new ArrayList<>();
+        result.add(new PlatformDtos.PlatformUserResponse(
+                ADMIN_ID,
+                ADMIN_EMAIL,
+                ADMIN_NAME,
+                Role.ADMIN,
+                null
+        ));
+        result.addAll(users);
+        return result;
     }
 
     private PlatformDtos.ActivityResponse toActivityResponse(ActivityEvent event) {
