@@ -15,6 +15,8 @@ import {
   Menu,
   X,
   ChevronDown,
+  ShieldCheck,
+  Users,
 } from 'lucide-react'
 
 const studentNav = [
@@ -29,6 +31,11 @@ const teacherNav = [
   { to: '/teacher/projects', icon: FileSearch, label: 'All Projects' },
   { to: '/teacher/assign', icon: Upload, label: 'Assign Reviewers' },
   { to: '/teacher/approvals', icon: Bell, label: 'Approvals' },
+]
+
+const adminNav = [
+  { to: '/admin/dashboard', icon: ShieldCheck, label: 'Admin Dashboard' },
+  { to: '/admin/dashboard#users', icon: Users, label: 'All Users' },
 ]
 
 export default function DashboardLayout() {
@@ -66,9 +73,21 @@ export default function DashboardLayout() {
           time: p.submittedAt,
           read: p.status === 'approved',
         }))
+      : user?.role === 'admin'
+        ? platformState.activityTimeline.slice(0, 8).map((item) => ({
+            id: `activity-${item.id}`,
+            message: `${item.actorName || 'System'}: ${item.detail}`,
+            time: item.time,
+            read: true,
+          }))
       : platformState.notifications.slice(0, 6)
 
-  const nav = user?.role === 'teacher' ? teacherNav : studentNav
+  const nav =
+    user?.role === 'teacher'
+      ? teacherNav
+      : user?.role === 'admin'
+        ? adminNav
+        : studentNav
 
   const handleLogout = () => {
     logout()

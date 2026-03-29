@@ -28,11 +28,14 @@ export default function LoginPage() {
   const refreshCaptcha = () => {
     setCaptcha(generateCaptcha())
     setCaptchaInput('')
-    setError('')
   }
 
   const handleRoleChange = (nextRole) => {
     setRole(nextRole)
+    if (nextRole === 'admin') {
+      setMode('login')
+      setName('')
+    }
     setCaptcha(generateCaptcha())
     setCaptchaInput('')
   }
@@ -46,9 +49,8 @@ export default function LoginPage() {
       refreshCaptcha()
       return
     }
-    const answer = parseInt(captchaInput, 10)
-    if (isNaN(answer) || answer !== captcha.sum) {
-      setError('Incorrect answer. Please try again.')
+    if (Number(captchaInput) !== captcha.sum) {
+      setError('Captcha answer is incorrect')
       refreshCaptcha()
       return
     }
@@ -75,7 +77,14 @@ export default function LoginPage() {
       if (res.success) {
         const targetRole = res.role || role
         setTimeout(() => {
-          navigate(targetRole === 'teacher' ? '/teacher/dashboard' : '/student/dashboard', { replace: true })
+          navigate(
+            targetRole === 'teacher'
+              ? '/teacher/dashboard'
+              : targetRole === 'admin'
+                ? '/admin/dashboard'
+                : '/student/dashboard',
+            { replace: true },
+          )
         }, 0)
       } else {
         setError(res.error || 'Login failed')
@@ -204,13 +213,20 @@ export default function LoginPage() {
               {mode === 'login' ? 'Welcome back' : 'Create account'}
             </h2>
             <p className="text-slate-300 mb-6">
-              {mode === 'login' ? 'Sign in to continue to your dashboard' : 'Register first, then login'}
+              {role === 'admin'
+                ? 'Sign in with the fixed admin credentials to open the admin dashboard'
+                : mode === 'login'
+                  ? 'Sign in to continue to your dashboard'
+                  : 'Register first, then login'}
             </p>
             <p className="text-xs text-slate-400 mb-4">
-              Login works only for registered accounts.
+              {role === 'admin'
+                ? 'Admin registration is disabled. Use the fixed admin email and password only.'
+                : 'Login works only for registered accounts.'}
             </p>
 
-            <div className="flex gap-2 p-1 bg-slate-800/70 rounded-lg mb-6">
+            {role !== 'admin' && (
+              <div className="flex gap-2 p-1 bg-slate-800/70 rounded-lg mb-6">
               <button
                 type="button"
                 onClick={() => setMode('login')}
@@ -233,10 +249,11 @@ export default function LoginPage() {
               >
                 Register
               </button>
-            </div>
+              </div>
+            )}
 
             {/* Role Selection */}
-            <div className="flex gap-2 p-1 bg-slate-800/70 rounded-lg mb-6">
+            <div className="grid grid-cols-3 gap-2 p-1 bg-slate-800/70 rounded-lg mb-6">
               <button
                 type="button"
                 onClick={() => handleRoleChange('student')}
@@ -258,6 +275,17 @@ export default function LoginPage() {
                 }`}
               >
                 Teacher
+              </button>
+              <button
+                type="button"
+                onClick={() => handleRoleChange('admin')}
+                className={`flex-1 py-2 rounded-md text-sm font-medium transition-all ${
+                  role === 'admin'
+                    ? 'bg-slate-900 text-indigo-300 shadow'
+                    : 'text-slate-300 hover:text-white'
+                }`}
+              >
+                Admin
               </button>
             </div>
 
@@ -283,7 +311,7 @@ export default function LoginPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@university.edu"
+                    placeholder={role === 'admin' ? 'avinashreddypadala1234@gmail.com' : 'you@university.edu'}
                     className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-700 bg-slate-900/70 text-white placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                   />
                 </div>
@@ -297,7 +325,7 @@ export default function LoginPage() {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
+                    placeholder={role === 'admin' ? '1236' : '••••••••'}
                     className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-700 bg-slate-900/70 text-white placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                   />
                 </div>
@@ -355,7 +383,7 @@ export default function LoginPage() {
                 type="submit"
                 className="w-full py-3 px-4 rounded-lg bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-medium hover:from-indigo-600 hover:to-blue-600 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition-all shadow-lg hover:shadow-xl"
               >
-                {mode === 'login' ? 'Sign in' : 'Create account'}
+                {role === 'admin' || mode === 'login' ? 'Sign in' : 'Create account'}
               </button>
             </form>
           </div>

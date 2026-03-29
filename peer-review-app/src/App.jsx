@@ -12,6 +12,7 @@ import TeacherDashboard from './pages/teacher/TeacherDashboard'
 import AllProjects from './pages/teacher/AllProjects'
 import AssignReviewers from './pages/teacher/AssignReviewers'
 import ApprovalsPage from './pages/teacher/ApprovalsPage'
+import AdminDashboard from './pages/admin/AdminDashboard'
 
 function App() {
   return (
@@ -47,6 +48,17 @@ function App() {
               <Route path="projects" element={<AllProjects />} />
               <Route path="assign" element={<AssignReviewers />} />
               <Route path="approvals" element={<ApprovalsPage />} />
+            </Route>
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute allowedRole="admin">
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<AdminDashboard />} />
             </Route>
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="*" element={<Navigate to="/" replace />} />

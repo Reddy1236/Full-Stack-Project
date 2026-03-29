@@ -4,7 +4,10 @@ import { API_BASE_URL } from '../config/api'
 const AuthContext = createContext(null)
 
 function toAppRole(role) {
-  return String(role || '').toLowerCase() === 'teacher' ? 'teacher' : 'student'
+  const normalizedRole = String(role || '').toLowerCase()
+  if (normalizedRole === 'teacher') return 'teacher'
+  if (normalizedRole === 'admin') return 'admin'
+  return 'student'
 }
 
 async function readApiError(response, fallback) {
@@ -61,11 +64,17 @@ export function AuthProvider({ children }) {
       }
 
       const data = await loginRes.json()
+      const resolvedRole = toAppRole(data.role)
+      const requestedRole = toAppRole(role)
+      if (requestedRole !== resolvedRole) {
+        return { success: false, error: `This account belongs to the ${resolvedRole} portal.` }
+      }
+
       const userData = {
         id: data.id,
         email: data.email,
         name: data.name,
-        role: toAppRole(data.role),
+        role: resolvedRole,
       }
       setUser(userData)
       if (rememberMe) {

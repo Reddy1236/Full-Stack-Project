@@ -1,12 +1,14 @@
+
 import {
+
   projects as initialProjects,
   reviews as initialReviews,
   notifications as initialNotifications,
   activityTimeline as initialActivityTimeline,
 } from '../data/dummyData'
+import { API_BASE_URL } from '../config/api'
 
 const STORAGE_KEY = 'peerReview_platformData'
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'
 
 function baseState() {
   return {
@@ -22,6 +24,7 @@ function baseState() {
     assignments: {},
     teacherDecisions: {},
     reviewReplies: {},
+    users: [],
   }
 }
 
@@ -66,6 +69,10 @@ function normalizePlatformState(payload) {
     assignments: payload.assignments || {},
     teacherDecisions: payload.teacherDecisions || {},
     reviewReplies: payload.reviewReplies || {},
+    users: (payload.users || []).map((user) => ({
+      ...user,
+      role: String(user.role || '').toLowerCase(),
+    })),
     notifications: payload.notifications || [],
     activityTimeline: (payload.activityTimeline || []).map((item) => ({
       ...item,

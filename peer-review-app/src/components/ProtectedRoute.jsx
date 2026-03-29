@@ -18,7 +18,12 @@ export default function ProtectedRoute({ children, allowedRole }) {
   }
 
   if (allowedRole && user.role !== allowedRole) {
-    const redirect = user.role === 'teacher' ? '/teacher/dashboard' : '/student/dashboard'
+    const redirect =
+      user.role === 'teacher'
+        ? '/teacher/dashboard'
+        : user.role === 'admin'
+          ? '/admin/dashboard'
+          : '/student/dashboard'
     return <Navigate to={redirect} replace />
   }
 
