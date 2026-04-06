@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Activity, BookOpenCheck, ShieldCheck, Users } from 'lucide-react'
+import { Activity, BookOpenCheck, Download, FileSpreadsheet, ShieldCheck, Users } from 'lucide-react'
 import { getPlatformState, refreshPlatformState } from '../../services/platformStore'
+import { downloadSimplePdf } from '../../utils/pdfExport'
+import { downloadCsv } from '../../utils/csvExport'
 
 const roleBadgeClass = {
   student: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300',
@@ -50,11 +52,85 @@ export default function AdminDashboard() {
     [data],
   )
 
+  const exportAdminPdf = () => {
+    const lines = [
+      'Admin Platform Report',
+      `Generated: ${new Date().toLocaleString()}`,
+      '',
+      `Total Users: ${data.users.length}`,
+      `Students: ${data.users.filter((user) => String(user.role || '').toLowerCase() === 'student').length}`,
+      `Teachers: ${data.users.filter((user) => String(user.role || '').toLowerCase() === 'teacher').length}`,
+      `Projects: ${data.projects.length}`,
+      `Reviews: ${data.reviews.length}`,
+      `Activity Events: ${data.activityTimeline.length}`,
+      '',
+      'Users:',
+      ...data.users.map(
+        (user, index) =>
+          `${index + 1}. ${user.name} | ${user.email} | Role: ${String(user.role || '').toLowerCase()} | Created: ${user.createdAt || '-'}`,
+      ),
+      '',
+      'Projects:',
+      ...projectRows.map(
+        (project, index) =>
+          `${index + 1}. ${project.title} | Student: ${project.author} | Status: ${String(project.status || '').replaceAll('_', ' ')} | Reviews: ${project.reviewCount} | Assigned: ${project.reviewersAssigned} | Teacher Score: ${project.finalScore ?? '-'} | Completion: ${project.completionPercentage ?? '-'}%`,
+      ),
+      '',
+      'Recent Activity:',
+      ...data.activityTimeline.slice(0, 30).map(
+        (item, index) =>
+          `${index + 1}. ${item.action} | ${item.detail} | Project: ${item.projectTitle || '-'} | Student: ${item.studentName || '-'} | By: ${item.actorName || '-'} (${item.actorRole || 'unknown'}) | Time: ${item.time || '-'}`,
+      ),
+    ]
+
+    downloadSimplePdf({
+      filename: `admin-platform-report-${Date.now()}.pdf`,
+      lines,
+    })
+  }
+
+  const exportAdminCsv = () => {
+    const rows = projectRows.map((project) => [
+      project.title,
+      project.author,
+      String(project.status || '').replaceAll('_', ' '),
+      project.reviewCount,
+      project.reviewersAssigned,
+      project.finalScore ?? '',
+      project.completionPercentage ?? '',
+      (project.files || []).length,
+    ])
+
+    downloadCsv({
+      filename: `admin-project-overview-${Date.now()}.csv`,
+      headers: ['Project', 'Student', 'Status', 'Reviews', 'Assigned', 'Teacher Score', 'Completion %', 'Files'],
+      rows,
+    })
+  }
+
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Admin Dashboard</h1>
-        <p className="text-slate-500 dark:text-slate-400">Full visibility into users, teacher actions, student submissions, and platform activity.</p>
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Admin Dashboard</h1>
+          <p className="text-slate-500 dark:text-slate-400">Full visibility into users, teacher actions, student submissions, and platform activity.</p>
+        </div>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <button
+            onClick={exportAdminCsv}
+            className="flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-white font-medium hover:bg-emerald-700"
+          >
+            <FileSpreadsheet className="h-4 w-4" />
+            Export CSV
+          </button>
+          <button
+            onClick={exportAdminPdf}
+            className="flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-white font-medium hover:bg-indigo-700"
+          >
+            <Download className="h-4 w-4" />
+            Export PDF
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
