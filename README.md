@@ -51,7 +51,8 @@ This platform helps students submit projects, participate in peer reviews, and c
 ## Live Links
 
 - Frontend: [https://peer-review-app-nine.vercel.app](https://peer-review-app-nine.vercel.app)
-- Backend: [https://peer-review-backend-new.onrender.com](https://peer-review-backend-new.onrender.com)
+- Backend: [https://full-stack-project-final-y9ah.onrender.com](https://full-stack-project-final-y9ah.onrender.com)
+- API Base URL: [https://full-stack-project-final-y9ah.onrender.com/api](https://full-stack-project-final-y9ah.onrender.com/api)
 - GitHub Repository: [https://github.com/Reddy1236/Full-Stack-Project](https://github.com/Reddy1236/Full-Stack-Project)
 
 ## Project Structure
@@ -87,7 +88,7 @@ mvn spring-boot:run
 Set this in Vercel or local `.env`:
 
 ```env
-VITE_API_BASE_URL=https://peer-review-backend-new.onrender.com/api
+VITE_API_BASE_URL=https://full-stack-project-final-y9ah.onrender.com/api
 ```
 
 ### Backend
@@ -95,11 +96,7 @@ VITE_API_BASE_URL=https://peer-review-backend-new.onrender.com/api
 Typical backend environment variables:
 
 ```env
-DB_URL=jdbc:postgresql://<host>:5432/<database>
-DB_USER=<username>
-DB_PASS=<password>
-DB_DRIVER=org.postgresql.Driver
-DB_DIALECT=org.hibernate.dialect.PostgreSQLDialect
+DATABASE_URL=<Render PostgreSQL Internal Database URL>
 APP_FRONTEND_URL=https://peer-review-app-nine.vercel.app,http://localhost:5173
 ```
 
@@ -120,4 +117,3 @@ APP_FRONTEND_URL=https://peer-review-app-nine.vercel.app,http://localhost:5173
 ## Contributors
 
 - Reddy1236
-
