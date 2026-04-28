@@ -1,4 +1,4 @@
-# Peer Review Backend (Spring Boot + MySQL)
+# Peer Review Backend (Spring Boot + MySQL/PostgreSQL)
 
 ## 1) Create DB from MySQL Workbench
 Open MySQL Workbench and run:
@@ -23,6 +23,22 @@ mvn spring-boot:run
 ```
 
 Backend runs on: `http://localhost:8080`
+
+## Render deployment
+
+Use the backend folder as the Docker root:
+
+- Root directory: `peer-review-backend`
+- Dockerfile path: `Dockerfile`
+
+Set these environment variables in Render:
+
+```env
+DATABASE_URL=<your Render Postgres Internal Database URL>
+APP_FRONTEND_URL=https://peer-review-app-nine.vercel.app,http://localhost:5173
+```
+
+`DATABASE_URL` may be either Render's normal `postgres://...` URL or a JDBC URL like `jdbc:postgresql://...`. The app converts Render's URL format automatically.
 
 ## 4) API quick test
 - GET `http://localhost:8080/api/projects`
